@@ -35,7 +35,7 @@ Clone this repository to your local machine and complete the instructions below.
 
 ## Part 2: Creating a New Schema and Sample Table
 
-1. Connect to your Azure SQL Database using Azure Data Studio or SQL Server Management Studio.
+1. Connect to your SQL Database using SQL Server Management Studio or Azure Data Studio.
 
 2. Create a new query window and execute the following SQL to create a new schema and a sample table:
 
