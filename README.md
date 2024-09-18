@@ -77,15 +77,21 @@ In this section, we'll create users with varying levels of access to demonstrate
 1. Create logins and users with different roles:
 
 ```sql
--- Create logins
+-- Create logins. Logins are created on the SERVER level in the master database
+-- Be sure you run this code ON MASTER
 -- A login is a security principal at the server level that allows connection to the SQL Server instance
 CREATE LOGIN HRManager WITH PASSWORD = 'HRPass123!';
 CREATE LOGIN SalesRep WITH PASSWORD = 'SalesPass123!';
 CREATE LOGIN ITSupport WITH PASSWORD = 'ITPass123!';
 GO
 
+-- Verify that the logins were created
+SELECT *
+FROM sys.sql_logins
+
 -- Create users for the logins
 -- A user is a security principal at the database level
+-- Switch back to AdventureWorksLT before running this Query
 -- Users are mapped to logins and are used to control access to database objects
 CREATE USER HRManagerUser FOR LOGIN HRManager;
 CREATE USER SalesRepUser FOR LOGIN SalesRep;
