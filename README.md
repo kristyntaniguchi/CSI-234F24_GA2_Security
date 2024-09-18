@@ -230,7 +230,7 @@ In a text file named "PermissionsExplanation.txt", provide brief explanations fo
 1. Ensure all your screenshots are saved in the screenshots folder.
 2. Add comments to your SQL code explaining the purpose of each major section.
 3. Include the "PermissionsExplanation.txt" file in your repository.
-4. Commit your changes with the message "Week 2 Tutorial Complete".
+4. Commit your changes with the message "Guided Activity 2 Complete".
 5. Push your changes to GitHub.
 
 If you have any questions about this assignment, please reach out to your instructor or the TA for this course.
