@@ -180,6 +180,9 @@ SELECT * FROM GA1.EmployeeData;
 INSERT INTO GA1.EmployeeData (EmployeeID, FirstName, LastName, Salary, Department)
 VALUES (5, 'Eva', 'Brown', 70000.00, 'Marketing');
 
+-- Check to see the new user is added
+SELECT * FROM GA1.EmployeeData;
+
 -- REVERT: This command switches back to our original user context
 REVERT;
 GO
