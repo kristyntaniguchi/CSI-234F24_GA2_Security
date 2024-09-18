@@ -74,7 +74,7 @@ GO
 
 In this section, we'll create users with varying levels of access to demonstrate RBAC.
 
-1. Create logins and users with different roles:
+1. Create logins in the master database:
 
 ```sql
 -- Create logins. Logins are created on the SERVER level in the master database
@@ -88,7 +88,11 @@ GO
 -- Verify that the logins were created
 SELECT *
 FROM sys.sql_logins
+```
 
+2. Create users in the AdventureWorks database
+
+```sql
 -- Create users for the logins
 -- A user is a security principal at the database level
 -- Switch back to AdventureWorksLT before running this Query
@@ -98,12 +102,16 @@ CREATE USER SalesRepUser FOR LOGIN SalesRep;
 CREATE USER ITSupportUser FOR LOGIN ITSupport;
 GO
 
+-- Verify that the users were created
+SELECT *
+FROM sys.database_principals
+
 -- The difference between a login and a user:
 -- Login: Server-level principal, used for authentication (connecting to the server)
 -- User: Database-level principal, used for authorization (accessing objects within a database)
 ```
 
-2. Create roles and assign permissions:
+3. Create roles and assign permissions:
 
 ```sql
 -- Create roles
@@ -138,7 +146,7 @@ ALTER ROLE ITRole ADD MEMBER ITSupportUser;
 GO
 ```
 
-3. Add column-level permissions:
+4. Add column-level permissions:
 
 ```sql
 -- Column-level permissions allow for more granular control over data access
@@ -153,8 +161,6 @@ GRANT UPDATE ON GA1.EmployeeData(FirstName, LastName, Department) TO ITRole;
 DENY UPDATE ON GA1.EmployeeData(Salary) TO ITRole;
 GO
 ```
-
-4. Take a screenshot of these queries and their results, and save it in the screenshots folder.
 
 ## Part 4: Testing User Access
 
