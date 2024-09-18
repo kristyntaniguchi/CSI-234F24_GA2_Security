@@ -33,156 +33,207 @@ Clone this repository to your local machine and complete the instructions below.
 
 ![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/03f4e697-f7f8-4e8c-821d-6a18f3fcd8cb)
 
-## Guided Activity Part 2 Creating an Azure SQL Database. Make sure to follow these next steps exactly. If you deploy the database incorrectly you could spend all of your Azure Credits very quickly.
+## Part 2: Creating a New Schema and Sample Table
 
-1. Navigate to Azure.com and login with your student email and password that you used to register for Azure for Students last week.
-2. In the top search window search for Azure SQL and click on the Azure SQL option.
+1. Connect to your Azure SQL Database using Azure Data Studio or SQL Server Management Studio.
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/ec389fc4-f715-42ad-809b-81849c63bb7e)
+2. Create a new query window and execute the following SQL to create a new schema and a sample table:
 
+```sql
+-- Create a new schema
+-- A schema is a logical container for database objects like tables, views, and stored procedures
+-- It helps in organizing database objects and can be used for access control
+CREATE SCHEMA GA1;
+GO
 
-3. Click Create on the Azure SQL Page.
-4. On the Select SQL Deployment Page, click the drop down under SQL Databases and Choose Database Server and click Create.
+-- Create a sample table in the new schema
+-- This table will store employee information
+CREATE TABLE GA1.EmployeeData (
+    EmployeeID INT PRIMARY KEY,  -- Unique identifier for each employee
+    FirstName NVARCHAR(50),      -- First name of the employee
+    LastName NVARCHAR(50),       -- Last name of the employee
+    Salary DECIMAL(10, 2),       -- Employee's salary (allows for 2 decimal places)
+    Department NVARCHAR(50)      -- Department where the employee works
+);
+GO
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/9a16c291-c0e1-4063-839d-56de949ea8c3)
+-- Insert some sample data into the EmployeeData table
+-- This data will be used to test our permissions later
+INSERT INTO GA1.EmployeeData (EmployeeID, FirstName, LastName, Salary, Department)
+VALUES 
+(1, 'John', 'Doe', 50000.00, 'Sales'),
+(2, 'Jane', 'Smith', 60000.00, 'HR'),
+(3, 'Bob', 'Johnson', 55000.00, 'IT'),
+(4, 'Alice', 'Williams', 65000.00, 'Finance');
+GO
+```
 
+3. Take a screenshot of the query and its results, and save it in the screenshots folder.
 
-5. On the Create SQL Database Server screen Verify that the subscription says Azure for Students.
-6. Under resource group click create new.
-7. Choose a name for the group and click Ok.
+## Part 3: Creating Users with Different Levels of Access
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/ad3ff2cf-7911-4dfd-afc1-fd35c0607884)
+In this section, we'll create users with varying levels of access to demonstrate RBAC.
 
-8. Choose a name for the server. This name has to be unique among all SQL Servers on Azure so you may have to choose a few different options.
-9. In the location drop down select US West 3.
+1. Create logins and users with different roles:
 
+```sql
+-- Create logins
+-- A login is a security principal at the server level that allows connection to the SQL Server instance
+CREATE LOGIN HRManager WITH PASSWORD = 'HRPass123!';
+CREATE LOGIN SalesRep WITH PASSWORD = 'SalesPass123!';
+CREATE LOGIN ITSupport WITH PASSWORD = 'ITPass123!';
+GO
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/57fabf68-59e8-4aa5-925b-b20d4d7fbf70)
+-- Create users for the logins
+-- A user is a security principal at the database level
+-- Users are mapped to logins and are used to control access to database objects
+CREATE USER HRManagerUser FOR LOGIN HRManager;
+CREATE USER SalesRepUser FOR LOGIN SalesRep;
+CREATE USER ITSupportUser FOR LOGIN ITSupport;
+GO
 
-10. Under Authentication Choose Use SQL Authentication.
-11. Choose an admin username and password.
-12. Make sure to remember this password as you will need it later.
+-- The difference between a login and a user:
+-- Login: Server-level principal, used for authentication (connecting to the server)
+-- User: Database-level principal, used for authorization (accessing objects within a database)
+```
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/c14835f8-c1bb-40d5-b03d-3ab06f299237)
+2. Create roles and assign permissions:
 
-13. Click the Networking tab at the top of the page and Click Yes Allow Azure services and resources to access this server.
+```sql
+-- Create roles
+-- Roles are used to group users and assign permissions collectively
+CREATE ROLE HRRole;
+CREATE ROLE SalesRole;
+CREATE ROLE ITRole;
+GO
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/1bdc5085-0c9d-436b-8c09-e1e221b0fcd5)
+-- Assign permissions to roles
+-- GRANT: Gives a security principal permission to perform an action
+-- SCHEMA::GA1 applies the permission to all objects within the GA1 schema
 
-14. Click Review and Create and then Click Create. Your Screen should look something like this when you Create. Your subcription will be different than mine however.
-15. Notice the Estimated charges per month. It should say no Additional Charges. Click Create.
+-- SELECT: Allows reading data
+-- INSERT: Allows adding new rows
+-- UPDATE: Allows modifying existing data
+-- DELETE: Allows removing rows
+GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::GA1 TO HRRole;
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/84bbb4c5-12f3-4fe1-9aed-5704b15e51a1)
+-- SalesRole only needs to view employee data, not modify it
+GRANT SELECT ON GA1.EmployeeData TO SalesRole;
 
-16. Deployment of your new SQL Server will take some time. You will see ...Deployment in Progress
-17. When it is done the screen will display your deployment is complete.
-18. Click go to resource when it is complete.
+-- ITRole needs to view data and update certain information
+GRANT SELECT, UPDATE ON GA1.EmployeeData TO ITRole;
+GO
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/f9741595-4c71-4f59-9c1f-e6071f321662)
+-- Assign users to roles
+-- This links the users to their respective roles, granting them the role's permissions
+ALTER ROLE HRRole ADD MEMBER HRManagerUser;
+ALTER ROLE SalesRole ADD MEMBER SalesRepUser;
+ALTER ROLE ITRole ADD MEMBER ITSupportUser;
+GO
+```
 
+3. Add column-level permissions:
 
+```sql
+-- Column-level permissions allow for more granular control over data access
 
-19. You are now looking at the home page for your new SQL Server. It should look something like this.
+-- DENY: Explicitly prevents a security principal from performing an action
+-- This ensures that SalesRole cannot view salary information
+DENY SELECT ON GA1.EmployeeData(Salary) TO SalesRole;
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/e98e326e-f8e1-4184-a22e-e4cbd3aaca43)
+-- Grant UPDATE permission on specific columns for ITRole
+-- This allows IT to update employee information except for salary
+GRANT UPDATE ON GA1.EmployeeData(FirstName, LastName, Department) TO ITRole;
+DENY UPDATE ON GA1.EmployeeData(Salary) TO ITRole;
+GO
+```
 
-20. Now we need to tell Azure to allow connections over the internet.
-21. Click on the Networking button on the left side of the Screen.
+4. Take a screenshot of these queries and their results, and save it in the screenshots folder.
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/7c7edd76-3b80-4742-b935-8272938cbff8)
+## Part 4: Testing User Access
 
+Now, we'll test the access for different users to verify the RBAC implementation.
 
-22. Click on Add your client IPv4 address to allow connections from your current IP to the server.
-23. If your IP address changes you will have to create a new rule.
-24. Make sure to click Save on this screen.
+1. Test HRManagerUser access:
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/3ca0a8f0-a6cb-4dff-ba94-de9d1c6756b2)
+```sql
+-- EXECUTE AS: This command allows us to switch context to a different user
+-- This simulates logging in as the HR Manager
+EXECUTE AS USER = 'HRManagerUser';
 
-25. Take a screenshot of this page after you are done and save it in the screenshots folder.
-26. Click Overview in the top left of the screen to return to the Home page for the SQL Server
-27. Take a screenshot of the SQL Server home page and save it in the screenshots folder.
-28. Create a new commit with Summary "Part 2 Complete" and push the changes to GitHub.
+-- HR should have full access to the employee data
+SELECT * FROM GA1.EmployeeData;
 
-## Guided Activity Part 3 Deploying our sample database
-1. At this point is it possible to connect to your SQL Server if you would like to try.
-2. The server name is the address you can use along with the port 1433
-3. Use SQL Authentication and provide the admin login and password that you made previously.
-4. You may use either Azure Data Studio or SQL Server Management Studio
+-- HR should be able to insert new employee records
+INSERT INTO GA1.EmployeeData (EmployeeID, FirstName, LastName, Salary, Department)
+VALUES (5, 'Eva', 'Brown', 70000.00, 'Marketing');
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/2b06fbb0-2f42-4933-9f60-625fa6e07b6e)
+-- REVERT: This command switches back to our original user context
+REVERT;
+GO
+```
 
-5. Once you have connected take a screenshot and add it to the screenshots folder.
+After executing this code, take a screenshot of the results and save it in the screenshots folder.
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/cabb2fef-b11a-4b4a-8195-91303c4e8fbe)
+2. Test SalesRepUser access:
 
-6. Notice that the only database listed is master.
-7. master is a database used by SQL Server for login and system information and is not available for general use.
-8. In order to deploy our sample data we need to add a database to our server.
-9. This is where we will begin to incure charges from Azure SQL. The server is free, the databases are what cost money.
-10. Go back to the Server home page in Azure SQL and click Create Database.
+```sql
+-- Switch to the Sales Representative user context
+EXECUTE AS USER = 'SalesRepUser';
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/c02760cf-91e9-4c71-b86e-acbf35048f66)
+-- Sales should be able to view employee data, but not salary information
+SELECT * FROM GA1.EmployeeData;
 
-11. Be VERY CAREFUL over these next steps, this is where you can accidentially spend too much money.
-12. Choose a database name.
-13. Confirm that NO is selected for Usq SQL Elastic Pool.
-14. Under Workload environment Click Development
+-- This insert should fail because SalesRole only has SELECT permission
+INSERT INTO GA1.EmployeeData (EmployeeID, FirstName, LastName, Salary, Department)
+VALUES (6, 'Mike', 'Davis', 52000.00, 'Sales');
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/b62ee206-44b3-4f86-bc8e-b599c6b43942)
+REVERT;
+GO
+```
 
+After executing this code, take a screenshot of the results and save it in the screenshots folder.
 
-15. Under Compute + Storage click configure database
+3. Test ITSupportUser access:
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/b5f555bd-84dc-42cf-b742-b3ac430879be)
+```sql
+-- Switch to the IT Support user context
+EXECUTE AS USER = 'ITSupportUser';
 
-16. Click the drop down next to Seervice Tier and choose Basic (For less demanding workloads) under the DTU-based purchasing model.
-17. After you choose this opition you should see to the right that the database will cost $4.90 per month.
-18. Click Apply
+-- IT should be able to view all employee data
+SELECT * FROM GA1.EmployeeData;
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/1fdb6e39-b5f7-4857-936d-e8b4371a1a82)
+-- This update should succeed (updating department)
+UPDATE GA1.EmployeeData SET Department = 'IT Support' WHERE EmployeeID = 3;
 
-19. You will be taken back to the Create SQL database page.
-20. Click Additional Settings at the top.
-21. Under Data source: Use Existing Data click on Sample.
+-- This update should fail (attempting to update salary)
+UPDATE GA1.EmployeeData SET Salary = 58000.00 WHERE EmployeeID = 3;
 
+REVERT;
+GO
+```
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/4d3bd814-f5e7-4254-992c-a49de7de4ac7)
+After executing this code, take a screenshot of the results and save it in the screenshots folder.
 
-22. Click Review and Create.
-23. Make sure that your estimated charges are still $4.90 per month
-24. Click Create.
-25. Wait for deployment to complete.
-26. Once deployment is complete click Go to resource.
+## Part 5: Explanation of Permissions
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/6a0abe31-f4c8-4f9e-ac5a-7bb91200e338)
+In a text file named "PermissionsExplanation.txt", provide brief explanations for the following:
 
-27. This is the home page for the Database that you just deployed.
-28. Take a screenshot of this page and add it to the screenshots folder.
-29. Go back to Azure Data Studio and click refresh on the home page of your server or reconnect to the database
+1. Explain the different types of permissions you assigned (SELECT, INSERT, UPDATE, DELETE) and what each allows a user to do.
+2. Describe the concept of schema-level permissions vs. table-level permissions.
+3. Explain how column-level permissions work and why they might be useful.
+4. Discuss the principle of least privilege and how it's applied in this RBAC setup.
+5. Explain the potential security benefits of using roles instead of assigning permissions directly to users.
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/b0698892-be86-4214-b7c3-2a2e7d51b8c5)
+## Submission
 
-30. Notice that you now have another database in your server.
-31. Click the Connections button in the upper left of Azure Data Studio.
-32. Click on the server.
-33. Click on Databases.
-34. Click on your new sample Database.
-35. Click on Tables to view all of the tables in our Sample Database.
+1. Ensure all your screenshots are saved in the screenshots folder.
+2. Add comments to your SQL code explaining the purpose of each major section.
+3. Include the "PermissionsExplanation.txt" file in your repository.
+4. Commit your changes with the message "Week 2 Tutorial Complete".
+5. Push your changes to GitHub.
 
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/9d3a9f0c-7b6c-4566-a532-a0d6ea9646f3)
-
-36. Take a screenshot of this and add it to the screenshots folder.
-37. Right click the SalesLT.Customer table and click select top 1000 rows.
-
-![image](https://github.com/EmeryCSI/CSI234F23_GuidedActivity2/assets/102991550/ecf5b9a7-e6fd-4cc6-b37c-2e099742c638)
-
-38. Take a screenshot of the output and add it to the screenshots folder.
-39. Create a new Commit in GitHub Desktop with "Assignment Complete"
-40. Push the changes to GitHub.
-
-
-If you have any questions about this assignment please reach out to myself or our TA for this course. 
-
+If you have any questions about this assignment, please reach out to your instructor or the TA for this course.
 
 
 Feel free to message your instructor or the TA on Canvas if you have any questions.
